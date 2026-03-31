@@ -4,19 +4,25 @@ import numpy as np
 
 # Set environment
 #raster_path = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\Erosivity_IMERGV06B_30min_2001_2021.tif'
-#raster_path = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\GloRESatE.tif'
-raster_path = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\Figure_A1a_IMERGV06_Erosivity.tif'
+raster_path = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\GloRESatE.tif'
+#raster_path = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\Figure_A1a_IMERGV06_Erosivity.tif'
 #raster_path = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\Figure_A1b_Corrected_Erosivity.tif'
-output_lat_raster = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\latitude.tif'
-output_area_raster = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\area_km2.tif'
+cont_rst_path = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\continents.tif'
 arcpy.env.workspace = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data'
+
+in_shapefile = 'World_Continents'          # The input shapefile
+value_field = 'CONTINENT'                  # The column in the attribute table to use for pixel values
+out_raster = cont_rst_path                 # The output raster file name
+cell_size = 1000
+arcpy.conversion.FeatureToRaster(in_shapefile, value_field, out_raster, cell_size)
+
 
 arr = arcpy.RasterToNumPyArray(raster_path).astype(float)
 l = arr.flatten()
 print(l)
 print(len(l))
 print('pixel avg', np.nanmean(l))
-print('filtered pixel avg', np.nanmean(l[(l > 1.0) & (l < 30000.0)]))
+#print('filtered pixel avg', np.nanmean(l[(l > 1.0) & (l < 30000.0)]))
 
 # Check out the Spatial Analyst extension
 arcpy.CheckOutExtension('Spatial')
@@ -69,12 +75,12 @@ lat_radians = (latitude_raster * math.pi) / 180.0
 pixel_area = (111.32 * Cos(lat_radians)) * (111.32 * cell_size_x * cell_size_y)
 
 land_raster = input_raster
-land_raster = Con(land_raster > 0.0, land_raster, np.nan)
+land_raster = Con(land_raster >= 0.0, land_raster, np.nan)
 #land_raster = Con(land_raster < 30000.0, land_raster, np.nan)
 for_constant_pixel_area = Con(land_raster != np.nan, pixel_area, np.nan)
 
 constant_value = arcpy.RasterToNumPyArray(for_constant_pixel_area).astype(float)
-constant_value = np.where(constant_value > 0.0, constant_value, np.nan) 
+constant_value = np.where(constant_value >= 0.0, constant_value, np.nan) 
 constant_value = np.nansum(constant_value)
 print('constant value', constant_value)
 const_raster = CreateConstantRaster(float(constant_value), 'FLOAT', 0.1, Extent(-180, -90, 180, 90))
@@ -90,3 +96,45 @@ print('sum', np.nansum(weight_arr))
 print('count', np.sum(~np.isnan(weight_arr)))
 area_avg = np.nansum(weight_arr)
 print(area_avg)
+
+print('GLOBAL')
+print(area_avg)
+
+#AFRICA:1
+#ASIA:2
+#AUSTRALIA:3
+#OCEANIA:4
+#SOUTH AMERICA:5
+#EUROPE:7
+#NORTH AMERICA:8
+
+cont_raster = arcpy.Raster('continents.tif')
+continents = [1, 2, 3, 4, 5, 7, 8]
+cont_names = ['AFRICA', 'ASIA', 'AUSTRALIA', 'OCEANIA', 'SOUTH AMERICA', 'EUROPE', 'NORTH AMERICA']
+for i, cont in enumerate(continents):
+
+  print(cont_names[i])
+  land_raster = input_raster
+  land_raster = Con((land_raster >= 0.0) & (cont_raster == cont), land_raster, np.nan)
+  #land_raster = Con(land_raster < 30000.0, land_raster, np.nan)
+  for_constant_pixel_area = Con(land_raster != np.nan, pixel_area, np.nan)
+
+  constant_value = arcpy.RasterToNumPyArray(for_constant_pixel_area).astype(float)
+  constant_value = np.where(constant_value >= 0.0, constant_value, np.nan) 
+  constant_value = np.nansum(constant_value)
+  const_raster = CreateConstantRaster(float(constant_value), 'FLOAT', 0.1, Extent(-180, -90, 180, 90))
+  arcpy.DefineProjection_management(const_raster, spatial_reference)
+
+  weight_raster = land_raster * (pixel_area/const_raster)
+  weight_arr = arcpy.RasterToNumPyArray(weight_raster).astype(float)
+  weight_arr = np.where(weight_arr < 0.0, np.nan, weight_arr) 
+
+  area_avg = np.nansum(weight_arr)
+  print(area_avg)
+  #print('constant value', constant_value)
+  #print('shape', weight_arr.shape)
+  #print('mean', np.nanmean(weight_arr))
+  #print('count', np.sum(~np.isnan(weight_arr)))
+
+
+
