@@ -3,8 +3,8 @@ from arcpy.sa import *
 import numpy as np
 
 # Set environment
-#raster_path = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\Erosivity_IMERGV06B_30min_2001_2021.tif'
-raster_path = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\GloRESatE.tif'
+raster_path = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\Erosivity_IMERGV06B_30min_2001_2021.tif'
+#raster_path = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\GloRESatE.tif'
 #raster_path = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\Figure_A1a_IMERGV06_Erosivity.tif'
 #raster_path = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\Figure_A1b_Corrected_Erosivity.tif'
 cont_rst_path = r'C:\Users\andre\Documents\ArcGIS\Projects\MyProject2\Data\continents.tif'
