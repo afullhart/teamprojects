@@ -37,13 +37,13 @@ if response.status_code == 200:
     with open(output_csv, mode='w', newline='') as file:
         writer = csv.writer(file)
         
-        # --- UPDATED: Added 'Pasture' to the header row ---
+        # --- Added 'Pasture' to the header row ---
         writer.writerow(['Pasture', 'Transect_ID', 'Date'])
         
         # 3. Loop through ALL extracted URLs
         for url in srer_transect_urls:
             
-            # --- UPDATED: Extract both Pasture and Transect ID from the URL ---
+            # --- Extract both Pasture and Transect ID from the URL ---
             url_parts = url.split('/')
             transect_id = url_parts[-1]
             pasture = url_parts[-2] # Grabs the directory name right before the transect ID
@@ -64,11 +64,11 @@ if response.status_code == 200:
                     try:
                         parsed_date = datetime.strptime(raw_date, '%Y %b %d').strftime('%Y-%m-%d')
                         
-                        # --- UPDATED: Write the pasture label into the row ---
+                        # --- Write the pasture label into the row ---
                         writer.writerow([pasture, transect_id, parsed_date])
                         
                     except ValueError:
-                        # --- UPDATED: Write the pasture label here as well ---
+                        # --- Write the pasture label here as well ---
                         writer.writerow([pasture, transect_id, raw_date])
                 
             else:
